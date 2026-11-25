@@ -29,9 +29,20 @@ function serviceWorker(): Plugin {
   };
 }
 
+/** Content Security Policy läggs bara in i bygget (Vites utvecklingsserver behöver inline-stilar). */
+function csp(): Plugin {
+  const policy =
+    "default-src 'self'; connect-src 'self' https://api.anthropic.com; img-src 'self' data: blob:; style-src 'self'; font-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'";
+  return {
+    name: 'fel-nummer-csp',
+    apply: 'build',
+    transformIndexHtml: (html) => html.replace('<meta charset="utf-8" />', `<meta charset="utf-8" />\n    <meta http-equiv="Content-Security-Policy" content="${policy}" />`),
+  };
+}
+
 export default defineConfig({
   base: '/fel-nummer/',
   define: { __APP_VERSION__: JSON.stringify(pkg.version) },
-  plugins: [serviceWorker()],
+  plugins: [serviceWorker(), csp()],
   build: { target: 'es2022', sourcemap: false },
 });

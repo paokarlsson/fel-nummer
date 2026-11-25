@@ -194,6 +194,8 @@ export class Engine {
   pump(): Promise<void> {
     if (this.running) return this.running;
     this.running = (async () => {
+      // Vänta en mikrotask så att this.running hinner sättas innan loopen kan avslutas.
+      await null;
       try {
         for (;;) {
           if (this.halted || this.s.ended) break;
@@ -221,6 +223,9 @@ export class Engine {
   /** Stoppar körningen (t.ex. utan giltig nyckel). Jobbet som pågick läggs tillbaka. */
   halt() {
     this.halted = true;
+  }
+  setProvider(p: LlmProvider) {
+    this.d.provider = p;
   }
   resume() {
     this.halted = false;

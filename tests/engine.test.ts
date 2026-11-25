@@ -108,6 +108,12 @@ describe('prompten', () => {
 });
 
 describe('motorn', () => {
+  it('är inte upptagen när kön är tom', async () => {
+    const { e } = engine();
+    await e.pump();
+    expect(e.busy).toBe(false);
+  });
+
   it('svarar på sms från spelaren', async () => {
     const { e, s } = engine();
     e.playerSend('matte', 'hej, vem är du?');
