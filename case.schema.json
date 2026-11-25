@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Fel nummer – fall",
+  "description": "Ett fall för Fel nummer. Motorn kontrollerar dessutom id:n, avsändare och tider (src/engine/validate.ts).",
+  "type": "object",
+  "required": ["id", "version", "title", "teaser", "language", "startDay", "start", "end", "player", "world", "characters", "services", "events", "endings", "truth"],
+  "$defs": {
+    "at": { "type": "string", "pattern": "^\\d+ \\d{1,2}:\\d{2}$", "description": "\"D HH:MM\", D = dag från start" },
+    "clock": { "type": "string", "pattern": "^\\d{1,2}:\\d{2}$" }
+  },
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "version": { "type": "integer" },
+    "title": { "type": "string" },
+    "teaser": { "type": "string" },
+    "language": { "type": "string" },
+    "startDay": { "enum": ["måndag", "tisdag", "onsdag", "torsdag", "fredag", "lördag", "söndag"] },
+    "start": { "$ref": "#/$defs/at" },
+    "end": { "$ref": "#/$defs/at" },
+    "player": {
+      "type": "object",
+      "required": ["number", "premise", "previousOwner"],
+      "properties": { "number": { "type": "string" }, "premise": { "type": "string" }, "labelInPrompts": { "type": "string" }, "previousOwner": { "type": "string" } }
+    },
+    "world": { "type": "string" },
+    "characters": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "fullName", "number", "color", "aliases", "bio", "style", "secret", "story", "goals", "knows", "schedule", "talk", "dailyBudget", "stress", "aliveUntil"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "fullName": { "type": "string" },
+          "number": { "type": "string" },
+          "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+          "aliases": { "type": "array", "items": { "type": "string" } },
+          "bio": { "type": "string" },
+          "style": { "type": "string" },
+          "secret": { "type": "string" },
+          "cover": { "type": "string" },
+          "story": { "type": "string" },
+          "goals": { "type": "string" },
+          "aboutPlayer": { "type": "string" },
+          "knows": { "type": "array", "items": { "type": "object", "required": ["at", "text"], "properties": { "at": { "$ref": "#/$defs/at" }, "text": { "type": "string" } } } },
+          "schedule": { "type": "object", "required": ["wake", "sleep"], "properties": { "wake": { "$ref": "#/$defs/clock" }, "sleep": { "$ref": "#/$defs/clock" } } },
+          "talk": { "type": "number", "minimum": 0, "maximum": 1 },
+          "dailyBudget": { "type": "integer", "minimum": 1 },
+          "stress": { "type": "number", "minimum": 0, "maximum": 10 },
+          "aliveUntil": { "anyOf": [{ "$ref": "#/$defs/at" }, { "type": "null" }] },
+          "guards": { "type": "array", "items": { "type": "object", "required": ["type", "pattern"], "properties": { "type": { "const": "neverSay" }, "pattern": { "type": "string" }, "log": { "type": "string" } } } },
+          "promptExtra": { "type": "string" },
+          "mockLines": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "services": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "number"],
+        "properties": { "id": { "type": "string" }, "name": { "type": "string" }, "number": { "type": "string" }, "autoReply": { "type": "string" }, "replies": { "type": "array", "items": { "type": "string" } } }
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["at"],
+        "properties": {
+          "at": { "$ref": "#/$defs/at" },
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "text": { "type": "string" },
+          "news": { "type": "object", "required": ["paper", "head"], "properties": { "paper": { "type": "string" }, "head": { "type": "string" }, "sub": { "type": "string" } } },
+          "image": { "type": "string" },
+          "alt": { "type": "string" },
+          "stress": { "type": "object", "additionalProperties": { "type": "number" } },
+          "react": { "type": "boolean" },
+          "deleteAfter": { "type": "number" },
+          "createGroup": {
+            "type": "object",
+            "required": ["id", "name", "createdBy", "members"],
+            "properties": { "id": { "type": "string" }, "name": { "type": "string" }, "createdBy": { "type": "string" }, "members": { "anyOf": [{ "const": "allAlive" }, { "type": "array", "items": { "type": "string" } }] } }
+          },
+          "if": { "type": "object", "properties": { "playerRevealed": { "type": "string" }, "flag": { "type": "string" }, "notFlag": { "type": "string" } } },
+          "end": { "type": "boolean" }
+        }
+      }
+    },
+    "endings": {
+      "type": "object",
+      "required": ["prompt", "choices", "accusable", "culprit", "right", "wrong"],
+      "properties": {
+        "prompt": { "type": "string" },
+        "choices": {
+          "type": "array",
+          "items": { "type": "object", "required": ["id", "label", "availableFrom", "text"], "properties": { "id": { "type": "string" }, "label": { "type": "string" }, "availableFrom": { "$ref": "#/$defs/at" }, "text": { "type": "string" }, "epilogueRight": { "type": "string" }, "epilogueWrong": { "type": "string" } } }
+        },
+        "accusable": { "type": "array", "items": { "type": "string" } },
+        "culprit": { "type": "string" },
+        "right": { "type": "string" },
+        "wrong": { "type": "string", "description": "{name} ersätts med den utpekade" }
+      }
+    },
+    "truth": {
+      "type": "object",
+      "required": ["timeline", "secrets"],
+      "properties": { "timeline": { "type": "array", "items": { "type": "string" } }, "secrets": { "type": "object", "additionalProperties": { "type": "string" } } }
+    }
+  }
+}
